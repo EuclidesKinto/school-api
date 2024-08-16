@@ -1,0 +1,18 @@
+
+ _   _    _    ____ _  _____ _   _  ____  ____ _    _   _ ____  
+| | | |  / \  / ___| |/ |_ _| \ | |/ ___|/ ___| |  | | | | __ ) 
+| |_| | / _ \| |   | ' / | ||  \| | |  _| |   | |  | | | |  _ \ 
+|  _  |/ ___ | |___| . \ | || |\  | |_| | |___| |__| |_| | |_) |
+|_| |_/_/   \_\____|_|\_|___|_| \_|\____|\____|_____\___/|____/ 
+                                        +-+-+ +-+-+-+-+-+-+-+
+                                        |B|Y| |C|R|O|W|S|E|C|
+                                        +-+-+ +-+-+-+-+-+-+-+
+
+If you are seeing this file, it is supposed that you are looking
+for security vulnerabilities in our systems. So, we would like to
+say that if you find any vulnerabilities we'll be happy to receive
+your report and reward you. Please reach us through the following
+channels.
+
+Contact: mailto:contato@crowsec.com.br
+Preferred-Languages: pt-br, en, es, fr

@@ -1,0 +1,219 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hackingclub-staging
+  labels:
+    app: hackingclub-staging
+    tags.datadoghq.com/env: staging
+    tags.datadoghq.com/service: hackingclub-api         
+  namespace: hackingclub-staging
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: hackingclub-staging
+  template:
+    metadata:
+      labels:
+        app: hackingclub-staging
+        tags.datadoghq.com/env: staging
+        tags.datadoghq.com/service: hackingclub-api               
+    spec:
+      volumes:
+        - hostPath:
+            path: /var/run/datadog/
+          name: apmsocketpath            
+      containers:
+      - name: hackingclub-staging
+        image: registry.digitalocean.com/hackingclub/hackingclub-staging:{{tag}}
+        volumeMounts:
+          - name: apmsocketpath
+            mountPath: /var/run/datadog              
+        ports:
+        - containerPort: 8000
+        env:
+        - name: APP_DEBUG
+          value: 'false'
+        - name: APP_ENV
+          value: staging
+        - name: APP_KEY
+          value: base64:LLV2GKuCOgEjRtYCE0L4a9K6FW2Z9mTxPf2fEE8w6zM=
+        - name: APP_DOMAIN
+          value: api-staging.hackingclub.io
+        - name: APP_URL
+          value: https://api-staging.hackingclub.io
+        - name: APP_DOMAIN_API
+          value: api-staging.hackingclub.io
+        - name: APP_DOMAIN_BACKOFFICE
+          value: backoffice.staging.hackingclub.io
+        - name: APP_FRONTEND_URL
+          value: https://app-staging.hackingclub.io
+        - name: APP_NAME
+          value: Hacking Club Staging
+        - name: APP_AUTHOR_URL
+          value: https://hackingclub.io
+        - name: AWS_DEPLOY_URL
+          value: https://f03897djmb.execute-api.us-east-1.amazonaws.com
+        - name: CASHIER_CURRENCY
+          value: BRL
+        - name: CASHIER_CURRENCY_LOCALE
+          value: pt_BR
+        - name: CASHIER_LOGGER
+          value: stack
+        - name: DB_CONNECTION
+          value: mysql
+        - name: DB_DATABASE
+          value: uhclabs
+        - name: DB_PORT
+          value: '25060'
+        - name: DB_HOST
+          value: private-hackingclub-db-staging-do-user-15497873-0.c.db.ondigitalocean.com
+        - name: DB_USERNAME
+          value: uhclabs
+        - name: FACEBOOK_CLIENT_ID
+          value: '922685561725024'
+        - name: FACEBOOK_REDIRECT
+          value: https://app-staging.hackingclub.io/auth/facebook/callback
+        - name: GITHUB_CLIENT_ID
+          value: c5452af6d9c33ca2a65a
+        - name: GITHUB_REDIRECT
+          value: https://app-staging.hackingclub.io/auth/github/callback
+        - name: GOOGLE_CLIENT_ID
+          value: 328866547795-pmq4n4p2ajjnuno2indm0nq4ljceacv8.apps.googleusercontent.com
+        - name: GOOGLE_REDIRECT
+          value: https://app-staging.hackingclub.io/auth/google/callback
+        - name: LOG_CHANNEL
+          value: papertrail
+        - name: MAIL_ENCRYPTION
+          value: tls
+        - name: MAIL_FROM_ADDRESS
+          value: no-reply@crowsec.com.br
+        - name: MAIL_FROM_NAME
+          value: Hacking Club
+        - name: MAIL_HOST
+          value: smtp.sendgrid.net
+        - name: MAIL_PORT
+          value: '587'
+        - name: MAIL_USERNAME
+          value: apikey
+        - name: PAGARME_ACCOUNT_ID
+          value: acc_eK3rODCQKcXEqg6m
+        - name: PAGARME_PUBLIC_KEY
+          value: pk_test_wVE9RXmCMMcaDpYg
+        - name: REDIS_HOST
+          value: redis
+        - name: REDIS_PORT
+          value: '6379'
+        - name: SANCTUM_STATEFUL_DOMAINS
+          value: app-staging.hackingclub.io,backoffice.hackingclub.io,localhost,127.0.0.1,127.0.0.1:80,::1
+        - name: SENTRY_LARAVEL_DSN
+          value: https://f2415b136a6745bc50130847cd0ece80@o1097234.ingest.sentry.io/4506542296137728
+        - name: SESSION_DOMAIN
+          value: ".hackingclub.io"
+        - name: SESSION_DRIVER
+          value: redis
+        - name: SESSION_LIFETIME
+          value: '120'
+        - name: STRIPE_KEY
+          value: pk_live_51HrWe6DKxALjq0Iq4ifZgdWSGMXzfKytYg3BZiP5Z0ITCtqb1C5AF9f0M6uBnVfw3f5SHA5IirvThoVKczEmPWSF00RroKIrzL
+        - name: VPN_MICROSERVICE_ORG
+          value: hackingclub
+        - name: VPN_MICROSERVICE_URL
+          value: http://vpn-connector-api-service.utils/
+        - name: PAGARME_BASE_API
+          value: https://api.pagar.me/core/v5/
+        - name: WHP_USER_ENDPOINT
+          value: https://msqoarvkqb.execute-api.us-east-1.amazonaws.com
+        - name: AWS_ACCESS_KEY_ID
+          value: AKIA6G2S5QLBP5MOKMLD
+        - name: AWS_DEFAULT_REGION
+          value: us-west-2
+        - name: AWS_BUCKET
+          value: uhclabs-static
+        - name: ACTIVE_CAMPAIGN_URL
+          value: https://lucianegoes1.api-us1.com/api/3/
+        - name: ACTIVE_CAMPAIGN_KEY
+          value: 75e65903c6c3d01205b8cb55518a66c321d892e076019d1aa1286ba8370ac95bfc6da9dc
+        - name: PAPERTRAIL_URL
+          value: logs5.papertrailapp.com
+        - name: PAPERTRAIL_PORT
+          value: '18371'
+        - name: WKHTML_PDF_BINARY
+          value: '/usr/bin/wkhtmltopdf'
+        - name: WKHTML_IMG_BINARY
+          value: '/usr/bin/wkhtmltopdf'
+        - name: EMAIL_VALIDATOR_SERVICE_URL
+          value: http://email-validator-service.utils/
+        - name: KAFKA_BROKERS
+          value: b-1.kafkaclusterprdcsedte.iwpgel.c19.kafka.us-east-1.amazonaws.com:9092,b-2.kafkaclusterprdcsedte.iwpgel.c19.kafka.us-east-1.amazonaws.com:9092
+        - name: IUGU_URL
+          value: "https://api.iugu.com/v1/"
+        - name: IM_API
+          value: "https://im-api.hackingclub.cloud"
+        - name: IM_ORG_ID
+          value: '1'     
+        - name: DD_ENV
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.labels['tags.datadoghq.com/env']
+        - name: DD_SERVICE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.labels['tags.datadoghq.com/service']
+        - name: DD_TRACE_ENABLED
+          value: 'true'      
+        - name: DD_TRACE_ENABLED
+          value: 'true'   
+        envFrom:
+        - secretRef:
+            name: staging-db-pass
+            optional: false
+        - secretRef:
+            name: facebook-client-secret
+            optional: false
+        - secretRef:
+            name: github-client-secret
+            optional: false
+        - secretRef:
+            name: google-client-secret
+            optional: false
+        - secretRef:
+            name: mail-password
+            optional: false
+        - secretRef:
+            name: pagarme-secret-key
+            optional: false
+        - secretRef:
+            name: stripe-secret
+            optional: false
+        - secretRef:
+            name: vpn-microservice-api-key
+            optional: false
+        - secretRef:
+            name: iugu-api-key
+            optional: false
+        - secretRef:
+            name: im-api-key
+            optional: false                  
+---
+# create service with port 80 to aws alb
+# Path: service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: hackingclub-staging-service
+  labels:
+    app: hackingclub-staging
+  namespace: hackingclub-staging
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: 8000
+    protocol: TCP
+    name: http
+  selector:
+    app: hackingclub-staging
+
+
+

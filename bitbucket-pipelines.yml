@@ -1,0 +1,117 @@
+image: atlassian/default-image:2
+pipelines:
+  branches:
+    master:
+      - step:
+          name: Build and push image
+          services:
+            - docker
+          caches:
+            - docker
+          script:
+            - apt update && apt install -y wget tar
+            - wget https://github.com/digitalocean/doctl/releases/download/v1.101.0/doctl-1.101.0-linux-amd64.tar.gz
+            - tar xf doctl-1.101.0-linux-amd64.tar.gz
+            - mv doctl /usr/local/bin
+            - doctl auth init --access-token $DIGITALOCEAN_ACCESS_TOKEN
+            - doctl registry login
+
+            # builds docker image from a local dockerfile
+            - docker build -t hackingclub-prod:$BITBUCKET_COMMIT .
+            # tags image as a way to id it by the timestamp
+            - docker tag hackingclub-prod:$BITBUCKET_COMMIT registry.digitalocean.com/hackingclub/hackingclub-prod:$BITBUCKET_COMMIT
+            # use pipe to push the image to AWS ECR
+            - docker push registry.digitalocean.com/hackingclub/hackingclub-prod:$BITBUCKET_COMMIT
+            # set $BITBUCKET_COMMIT as latest tag
+            - docker tag hackingclub-prod:$BITBUCKET_COMMIT registry.digitalocean.com/hackingclub/hackingclub-prod:latest
+            # push latest tag
+            - docker push registry.digitalocean.com/hackingclub/hackingclub-prod:latest
+      - step:
+          name: Run migrations
+          services:
+            - docker
+          script:
+            - apt update && apt install -y wget tar
+            - wget https://github.com/digitalocean/doctl/releases/download/v1.101.0/doctl-1.101.0-linux-amd64.tar.gz
+            - tar xf doctl-1.101.0-linux-amd64.tar.gz
+            - mv doctl /usr/local/bin
+            - doctl auth init --access-token $DIGITALOCEAN_ACCESS_TOKEN          
+            - doctl kubernetes cluster kubeconfig save 0bceb309-2208-46c8-8998-dc009a350b3c
+            - apt update && apt-get install libcurl4-nss-dev curl -y
+            - curl -L https://dl.k8s.io/release/v1.23.0/bin/linux/amd64/kubectl -o /usr/bin/kubectl
+            - chmod +x /usr/bin/kubectl
+            - kubectl delete -f .platform/job-prod.yaml || true
+            - kubectl apply -f .platform/job-prod.yaml
+            - kubectl wait --for=condition=complete job/hackingclub-prod-job-migration --timeout=300s -n hackingclub-prod
+            - kubectl logs job/hackingclub-prod-job-migration -n hackingclub-prod
+      - step:
+          name: Deploy to production
+          script:
+            - sed -i "s|{{tag}}|$BITBUCKET_COMMIT|g" .platform/deployment-prod.yaml
+            - apt update && apt install -y wget tar
+            - wget https://github.com/digitalocean/doctl/releases/download/v1.101.0/doctl-1.101.0-linux-amd64.tar.gz
+            - tar xf doctl-1.101.0-linux-amd64.tar.gz
+            - mv doctl /usr/local/bin
+            - apt update && apt-get install libcurl4-nss-dev curl -y
+            - curl -L https://dl.k8s.io/release/v1.23.0/bin/linux/amd64/kubectl -o /usr/bin/kubectl
+            - chmod +x /usr/bin/kubectl            
+            - doctl auth init --access-token $DIGITALOCEAN_ACCESS_TOKEN          
+            - doctl kubernetes cluster kubeconfig save 0bceb309-2208-46c8-8998-dc009a350b3c
+            - kubectl apply -f .platform/deployment-prod.yaml            
+    staging:
+      - step:
+          name: Build and push image
+          services:
+            - docker
+          caches:
+            - docker
+          script:
+            - apt update && apt install -y wget tar
+            - wget https://github.com/digitalocean/doctl/releases/download/v1.101.0/doctl-1.101.0-linux-amd64.tar.gz
+            - tar xf doctl-1.101.0-linux-amd64.tar.gz
+            - mv doctl /usr/local/bin
+            - doctl auth init --access-token $DIGITALOCEAN_ACCESS_TOKEN
+            - doctl registry login
+
+            # builds docker image from a local dockerfile
+            - docker build -t hackingclub-staging:$BITBUCKET_COMMIT .
+            # tags image as a way to id it by the timestamp
+            - docker tag hackingclub-staging:$BITBUCKET_COMMIT registry.digitalocean.com/hackingclub/hackingclub-staging:$BITBUCKET_COMMIT
+            # use pipe to push the image to AWS ECR
+            - docker push registry.digitalocean.com/hackingclub/hackingclub-staging:$BITBUCKET_COMMIT
+            # set $BITBUCKET_COMMIT as latest tag
+            - docker tag hackingclub-staging:$BITBUCKET_COMMIT registry.digitalocean.com/hackingclub/hackingclub-staging:latest
+            # push latest tag
+            - docker push registry.digitalocean.com/hackingclub/hackingclub-staging:latest
+      - step:
+          name: Run migrations
+          services:
+            - docker
+          script:
+            - apt update && apt install -y wget tar
+            - wget https://github.com/digitalocean/doctl/releases/download/v1.101.0/doctl-1.101.0-linux-amd64.tar.gz
+            - tar xf doctl-1.101.0-linux-amd64.tar.gz
+            - mv doctl /usr/local/bin
+            - doctl auth init --access-token $DIGITALOCEAN_ACCESS_TOKEN          
+            - doctl kubernetes cluster kubeconfig save 0bceb309-2208-46c8-8998-dc009a350b3c
+            - apt update && apt-get install libcurl4-nss-dev curl -y
+            - curl -L https://dl.k8s.io/release/v1.23.0/bin/linux/amd64/kubectl -o /usr/bin/kubectl
+            - chmod +x /usr/bin/kubectl
+            - kubectl delete -f .platform/job-staging.yaml || true
+            - kubectl apply -f .platform/job-staging.yaml
+            - kubectl wait --for=condition=complete job/hackingclub-staging-job-migration --timeout=300s -n hackingclub-staging
+            - kubectl logs job/hackingclub-staging-job-migration -n hackingclub-staging
+      - step:
+          name: Deploy to Staging
+          script:
+            - sed -i "s|{{tag}}|$BITBUCKET_COMMIT|g" .platform/deployment-staging.yaml
+            - apt update && apt install -y wget tar
+            - wget https://github.com/digitalocean/doctl/releases/download/v1.101.0/doctl-1.101.0-linux-amd64.tar.gz
+            - tar xf doctl-1.101.0-linux-amd64.tar.gz
+            - mv doctl /usr/local/bin
+            - apt update && apt-get install libcurl4-nss-dev curl -y
+            - curl -L https://dl.k8s.io/release/v1.23.0/bin/linux/amd64/kubectl -o /usr/bin/kubectl
+            - chmod +x /usr/bin/kubectl            
+            - doctl auth init --access-token $DIGITALOCEAN_ACCESS_TOKEN          
+            - doctl kubernetes cluster kubeconfig save 0bceb309-2208-46c8-8998-dc009a350b3c
+            - kubectl apply -f .platform/deployment-staging.yaml
